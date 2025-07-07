@@ -1,21 +1,23 @@
 package com.example.ProductServicePersonal.controllers;
 
 
+import com.example.ProductServicePersonal.dtos.CreateFakeStoreProductRequestDto;
 import com.example.ProductServicePersonal.dtos.ProductResponseDto;
 import com.example.ProductServicePersonal.models.Product;
-import com.example.ProductServicePersonal.services.FakeStoreProductService;
+import com.example.ProductServicePersonal.services.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class ProductController {
 
-    FakeStoreProductService fakeStoreProductService;
-    public ProductController(FakeStoreProductService fakeStoreProductService) {
-        this.fakeStoreProductService = fakeStoreProductService;
+    ProductService productService;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
 
     }
 
@@ -48,16 +50,46 @@ public class ProductController {
 
     @GetMapping("/products/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable long id){
-        Product product = fakeStoreProductService.getProductById(id);
+        Product product = productService.getProductById(id);
 
         ProductResponseDto productResponseDto = ProductResponseDto.from(product);
 
         ResponseEntity<ProductResponseDto> responseEntity =
-                new ResponseEntity<>(productResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+                new ResponseEntity<>(productResponseDto, HttpStatus.OK);
 
 
         return responseEntity;
     }
+
+    @GetMapping("/products")
+    public List<ProductResponseDto> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        List<ProductResponseDto> productResponseDtos = new ArrayList<>();
+
+        for(Product product : products) {
+            ProductResponseDto productResponseDto = ProductResponseDto.from(product);
+            productResponseDtos.add(productResponseDto);
+        }
+
+        return productResponseDtos;
+    }
+
+    @PostMapping("/products")
+    public ProductResponseDto createProduct(@RequestBody CreateFakeStoreProductRequestDto createFakeStoreProductRequestDto){
+
+        Product product=
+        productService.createProduct(createFakeStoreProductRequestDto.getName(),
+                createFakeStoreProductRequestDto.getDescription(),
+                createFakeStoreProductRequestDto.getPrice(),
+                createFakeStoreProductRequestDto.getCategory(),
+                createFakeStoreProductRequestDto.getImageUrl());
+
+        ProductResponseDto productResponseDto = ProductResponseDto.from(product);
+        return productResponseDto;
+
+    }
+
+
 
 
 }
